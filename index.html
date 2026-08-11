@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hostel Complaint Management System</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f7fb;color:#172033}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}.sidebar{width:245px;background:#101828;color:white;padding:22px 16px;position:fixed;inset:0 auto 0 0}
+.logo{font-size:20px;font-weight:800;padding:10px 12px 28px}.logo span{display:block;color:#8fb7ff;font-size:12px;margin-top:5px;font-weight:500}
+.nav button{width:100%;background:transparent;color:#cbd5e1;text-align:left;padding:13px 14px;border-radius:10px;margin:3px 0}.nav button.active,.nav button:hover{background:#1d2939;color:white}
+.main{margin-left:245px;width:calc(100% - 245px);padding:24px 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:25px}.user{background:white;padding:9px 13px;border-radius:12px;box-shadow:0 2px 8px #1018280d;font-size:14px}
+.page{display:none}.page.active{display:block}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:white;border-radius:15px;padding:19px;box-shadow:0 2px 12px #1018280b;border:1px solid #e7ebf2}.stat{display:flex;justify-content:space-between;align-items:center}.stat .num{font-size:28px;font-weight:800;margin-top:6px}.muted{color:#667085;font-size:13px}.icon{width:42px;height:42px;border-radius:11px;background:#edf4ff;display:grid;place-items:center;font-size:20px}
+.grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px}.card h2{font-size:17px;margin:0 0 15px}.complaint{padding:14px 0;border-top:1px solid #edf0f4}.complaint:first-child{border-top:0}.row{display:flex;justify-content:space-between;gap:10px}.title{font-weight:700}.meta{font-size:12px;color:#667085;margin-top:5px}.badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700}.high{background:#fee4e2;color:#b42318}.medium{background:#fff0c2;color:#8a5b00}.low{background:#dcfae6;color:#067647}.status{background:#eef2f6;color:#475467}.progress{background:#eaf2ff;color:#175cd3}.resolved{background:#dcfae6;color:#067647}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.toolbar input,.toolbar select,.form input,.form textarea,.form select{border:1px solid #d0d5dd;border-radius:9px;padding:10px 12px;background:white;outline:none}.toolbar input{flex:1;min-width:190px}
+.btn{padding:10px 15px;border-radius:9px;background:#1769e0;color:white;font-weight:700}.btn.secondary{background:#eef2f6;color:#344054}.btn.danger{background:#fee4e2;color:#b42318}.btn.small{padding:7px 10px;font-size:12px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;background:white}.table th,.table td{text-align:left;padding:13px 10px;border-bottom:1px solid #edf0f4;font-size:13px}.table th{color:#667085;font-size:12px}.empty{text-align:center;padding:35px;color:#667085}
+.form{max-width:700px}.form label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px}.form textarea{width:100%;min-height:120px;resize:vertical}.form input,.form select{width:100%}.form .two{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.modal{position:fixed;inset:0;background:#10182899;display:none;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.show{display:flex}.modalbox{background:white;width:min(600px,100%);max-height:90vh;overflow:auto;border-radius:16px;padding:23px}.modalhead{display:flex;justify-content:space-between;align-items:center}.close{background:#f2f4f7;border-radius:50%;width:34px;height:34px}
+.notice{padding:12px 14px;border-radius:10px;background:#eff8ff;color:#175cd3;font-size:13px;margin-bottom:15px}
+@media(max-width:850px){.sidebar{width:70px}.logo{font-size:0}.logo span{display:none}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:18px}.main{margin-left:70px;width:calc(100% - 70px);padding:18px}.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+@media(max-width:520px){.stats{grid-template-columns:1fr}.form .two{grid-template-columns:1fr}}
+
+.auth-screen{position:fixed;inset:0;background:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.auth-box{width:min(430px,100%);background:white;border:1px solid #e7ebf2;border-radius:18px;padding:28px;box-shadow:0 10px 35px #10182818}
+.auth-logo{font-size:25px;font-weight:850;margin-bottom:5px}.auth-logo span{display:block;color:#667085;font-size:13px;font-weight:500;margin-top:5px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;margin:22px 0 18px;background:#f2f4f7;border-radius:10px;padding:4px}.auth-tabs button{padding:10px;border-radius:8px;background:transparent;color:#667085;font-weight:700}.auth-tabs button.active{background:white;color:#1769e0;box-shadow:0 1px 4px #10182818}
+.auth-box label{display:block;font-size:13px;font-weight:700;margin:12px 0 7px}.auth-box input{width:100%;border:1px solid #d0d5dd;border-radius:9px;padding:11px 12px;outline:none}.auth-box .btn{width:100%;margin-top:18px}.auth-note{font-size:12px;color:#667085;margin-top:13px;line-height:1.5}.auth-error{color:#b42318;background:#fee4e2;padding:9px;border-radius:8px;font-size:12px;margin-top:12px;display:none}
+.role-pill{font-size:11px;background:#eef4ff;color:#175cd3;border-radius:20px;padding:5px 9px;font-weight:700;margin-left:6px}
+
+.success-page{min-height:65vh;display:flex;align-items:center;justify-content:center}
+.success-card{text-align:center;max-width:560px;width:100%;padding:45px 30px}
+.success-icon{width:78px;height:78px;border-radius:50%;background:#dcfae6;color:#067647;display:grid;place-items:center;font-size:42px;margin:0 auto 20px}
+.success-card h2{font-size:28px;margin:0 0 8px}.success-id{display:inline-block;background:#eef4ff;color:#175cd3;padding:9px 14px;border-radius:9px;font-weight:800;margin:15px 0}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">🏠 HostelCare<span>Hostel Complaint Management System</span></div>
+    <div class="auth-tabs">
+      <button id="studentTab" class="active" onclick="setAuthMode('student')">Student</button>
+      <button id="wardenTab" onclick="setAuthMode('warden')">Warden</button>
+    </div>
+
+    <div id="studentAuth">
+      <div id="studentLoginForm">
+        <h2 style="margin:0 0 5px">Student Login</h2>
+        <div class="muted">Login to submit and track your complaints.</div>
+        <label>Student ID / Email</label><input id="loginStudentId" placeholder="e.g. STU001">
+        <label>Password</label><input id="loginStudentPassword" type="password" placeholder="Enter password">
+        <button class="btn" onclick="studentLogin()">Login</button>
+        <div class="auth-note">New student? <button style="background:none;color:#1769e0;padding:0;font-weight:700" onclick="toggleStudentForm()">Create an account</button></div>
+      </div>
+
+      <div id="studentSignupForm" style="display:none">
+        <h2 style="margin:0 0 5px">Student Signup</h2>
+        <div class="muted">Create your verified student account.</div>
+        <label>Full Name</label><input id="signupName" placeholder="Your full name">
+        <label>Student ID</label><input id="signupId" placeholder="e.g. STU001">
+        <label>Room Number</label><input id="signupRoom" placeholder="e.g. A-204">
+        <label>Password</label><input id="signupPassword" type="password" placeholder="Create a password">
+        <label>Confirm Password</label><input id="signupConfirm" type="password" placeholder="Repeat password">
+        <button class="btn" onclick="studentSignup()">Create Student Account</button>
+        <div class="auth-note">Already registered? <button style="background:none;color:#1769e0;padding:0;font-weight:700" onclick="toggleStudentForm()">Login</button></div>
+      </div>
+    </div>
+
+    <div id="wardenAuth" style="display:none">
+      <h2 style="margin:0 0 5px">Warden Login</h2>
+      <div class="muted">Administrator access to the complaint dashboard.</div>
+      <label>Username</label><input id="wardenUser" placeholder="warden">
+      <label>Password</label><input id="wardenPassword" type="password" placeholder="Enter password">
+      <button class="btn" onclick="wardenLogin()">Login as Warden</button>
+      <div class="auth-note">Demo credentials: <b>warden</b> / <b>warden123</b></div>
+    </div>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">HostelCare<span>Complaint Management System</span></div>
+  <div class="nav">
+    <button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button id="adminComplaintsNav" onclick="showPage('complaints',this)">📋 Complaints</button>
+    <button onclick="showPage('register',this)">📒 Digital Register</button>
+    <button onclick="showPage('submit',this)">📝 Submit Complaint</button>
+    <button onclick="showPage('tv',this)">📺 TV Display</button>
+  </div>
+</aside>
+
+<main class="main">
+<header class="top"><h1 id="pageTitle">Warden Dashboard</h1><div class="user" id="userDisplay">👤 Warden / Admin <span class="role-pill">ADMIN</span> <button class="btn small secondary" onclick="logout()">Logout</button></div></header>
+
+<section id="dashboard" class="page active">
+  <div class="row" style="margin-bottom:16px"><div></div><button class="btn danger" onclick="resetComplaints()">🗑 Reset / Clear All Complaints</button></div>
+  <div class="stats">
+    <div class="card stat"><div><div class="muted">Total Complaints</div><div class="num" id="total">0</div></div><div class="icon">📋</div></div>
+    <div class="card stat"><div><div class="muted">Pending</div><div class="num" id="pending">0</div></div><div class="icon">⏳</div></div>
+    <div class="card stat"><div><div class="muted">In Progress</div><div class="num" id="progress">0</div></div><div class="icon">🔧</div></div>
+    <div class="card stat"><div><div class="muted">Resolved</div><div class="num" id="resolved">0</div></div><div class="icon">✅</div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h2>Recent Complaints</h2><div id="recent"></div></div>
+    <div class="card"><h2>Priority Overview</h2><div id="priority"></div></div>
+  </div>
+</section>
+
+<section id="submittedSuccess" class="page">
+  <div class="success-page">
+    <div class="card success-card">
+      <div class="success-icon">✓</div>
+      <h2>Complaint Submitted!</h2>
+      <div class="muted">Your complaint has been successfully registered and sent to the warden.</div>
+      <div class="success-id" id="successComplaintId">HC-2026-00000</div>
+      <p class="muted">Keep this Complaint ID to track your complaint.</p>
+      <button class="btn" onclick="successContinue()">View My Complaints</button>
+    </div>
+  </div>
+</section>
+
+<section id="complaints" class="page">
+  <div class="toolbar">
+    <input id="search" placeholder="Search complaint, room, student..." oninput="renderComplaints()">
+    <select id="filterStatus" onchange="renderComplaints()"><option value="">All Status</option><option>New</option><option>Pending</option><option>In Progress</option><option>Resolved</option></select>
+    <select id="filterPriority" onchange="renderComplaints()"><option value="">All Priority</option><option>High</option><option>Medium</option><option>Low</option></select>
+  </div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>ID</th><th>Complaint</th><th>Student/Room</th><th>Category</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead><tbody id="complaintRows"></tbody></table></div>
+</section>
+
+<section id="register" class="page">
+  <div class="card">
+    <div class="row">
+      <div>
+        <h2>📒 Digital Complaint Register</h2>
+        <div class="muted">Export the complete complaint history as an Excel-compatible spreadsheet.</div>
+      </div>
+      <button class="btn" onclick="exportExcel()">⬇ Export to Excel</button>
+    </div>
+  </div>
+  <div class="card table-wrap" style="margin-top:18px">
+    <table class="table">
+      <thead><tr><th>Complaint ID</th><th>Date</th><th>Student</th><th>Room</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Description</th></tr></thead>
+      <tbody id="registerRows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="submit" class="page">
+  <div class="card form">
+    <div class="notice">Submit a hostel issue. Your complaint will appear on the warden dashboard.</div>
+    <div class="two"><div><label>Student Name</label><input id="student" placeholder="Enter your name"></div><div><label>Room Number</label><input id="room" placeholder="e.g. A-204"></div></div>
+    <label>Complaint Title</label><input id="ctitle" placeholder="e.g. Bathroom tap leaking">
+    <label>Description</label><textarea id="desc" placeholder="Describe the issue clearly..."></textarea>
+    <div class="two"><div><label>Category</label><select id="category"><option>Electrical</option><option>Plumbing</option><option>Cleaning</option><option>Food</option><option>Furniture</option><option>Maintenance</option><option>Water Supply</option><option>Wi-Fi / Internet</option><option>Other</option></select></div><div><label>Priority</label><select id="newPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div></div>
+    <label>Photo (optional)</label><input id="photo" type="file" accept="image/*">
+    <br><br><button class="btn" onclick="submitComplaint()">Submit Complaint</button>
+  </div>
+</section>
+
+<section id="tv" class="page">
+  <div class="card"><div class="row"><div><h2>Live Warden Room Display</h2><div class="muted">Designed for a TV / large monitor</div></div><button class="btn" onclick="openTV()">Open Fullscreen Display</button></div></div>
+  <div class="stats" style="margin-top:18px"><div class="card"><div class="muted">🔴 High Priority</div><div class="num" id="tvHigh">0</div></div><div class="card"><div class="muted">⏳ Pending</div><div class="num" id="tvPending">0</div></div><div class="card"><div class="muted">🔧 In Progress</div><div class="num" id="tvProgress">0</div></div><div class="card"><div class="muted">✅ Resolved</div><div class="num" id="tvResolved">0</div></div></div>
+</section>
+</main></div>
+
+<div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h2 id="modalTitle">Complaint</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const seed=[
+{id:"HC-2026-001",student:"Arun Kumar",room:"A-204",title:"Bathroom tap leaking",desc:"The washroom tap has been continuously leaking.",category:"Plumbing",priority:"High",status:"Pending",date:"11 Aug 2026"},
+{id:"HC-2026-002",student:"Rahul S",room:"B-112",title:"Tube light not working",desc:"Ceiling light is not turning on.",category:"Electrical",priority:"Medium",status:"In Progress",date:"11 Aug 2026"},
+{id:"HC-2026-003",student:"Vishnu R",room:"A-301",title:"Room cleaning required",desc:"Room has not been cleaned as scheduled.",category:"Cleaning",priority:"Low",status:"New",date:"10 Aug 2026"},
+{id:"HC-2026-004",student:"Adil M",room:"C-108",title:"Dining hall water issue",desc:"Water supply near dining area is unavailable.",category:"Water Supply",priority:"High",status:"Resolved",date:"09 Aug 2026"}
+];
+let complaints=JSON.parse(localStorage.getItem("hostelComplaints")||"null")||seed;
+function save(){localStorage.setItem("hostelComplaints",JSON.stringify(complaints));renderAll()}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");document.getElementById("pageTitle").textContent=id==="dashboard"?"Warden Dashboard":id==="complaints"?"All Complaints":id==="register"?"Digital Complaint Register":id==="submit"?"Submit Complaint":"TV Display";
+if(id==="register") renderRegister()}
+function badge(v){return `<span class="badge ${v.toLowerCase().replaceAll(" ","")}">${v}</span>`}
+
+let currentUser=null;
+let authMode="student";
+
+function getUsers(){return JSON.parse(localStorage.getItem("hostelStudents")||"[]")}
+function setAuthMode(mode){
+ authMode=mode;
+ studentTab.classList.toggle("active",mode==="student"); wardenTab.classList.toggle("active",mode==="warden");
+ studentAuth.style.display=mode==="student"?"block":"none"; wardenAuth.style.display=mode==="warden"?"block":"none"; hideAuthError();
+}
+function toggleStudentForm(){
+ studentLoginForm.style.display=studentLoginForm.style.display==="none"?"block":"none";
+ studentSignupForm.style.display=studentSignupForm.style.display==="none"?"block":"none"; hideAuthError();
+}
+function showAuthError(msg){authError.textContent=msg;authError.style.display="block"}
+function hideAuthError(){authError.style.display="none"}
+function studentSignup(){
+ const name=signupName.value.trim(), id=signupId.value.trim(), room=signupRoom.value.trim(), pw=signupPassword.value, cpw=signupConfirm.value;
+ if(!name||!id||!room||!pw){showAuthError("Please fill in all fields.");return}
+ if(pw.length<6){showAuthError("Password must be at least 6 characters.");return}
+ if(pw!==cpw){showAuthError("Passwords do not match.");return}
+ let users=getUsers();
+ if(users.some(u=>u.id.toLowerCase()===id.toLowerCase())){showAuthError("That Student ID is already registered.");return}
+ users.push({name,id,room,password:pw});
+ localStorage.setItem("hostelStudents",JSON.stringify(users));
+ loginStudentId.value=id; loginStudentPassword.value=pw;
+ toggleStudentForm(); studentLogin();
+}
+function studentLogin(){
+ const id=loginStudentId.value.trim(), pw=loginStudentPassword.value;
+ const user=getUsers().find(u=>u.id.toLowerCase()===id.toLowerCase()&&u.password===pw);
+ if(!user){showAuthError("Invalid Student ID or password.");return}
+ currentUser={...user,role:"student"}; enterApp();
+}
+function wardenLogin(){
+ if(wardenUser.value.trim()==="warden" && wardenPassword.value==="warden123"){
+   currentUser={name:"Warden / Admin",role:"warden"}; enterApp();
+ }else showAuthError("Invalid warden username or password.");
+}
+function enterApp(){
+ authScreen.style.display="none";
+ document.querySelector(".sidebar").style.display=currentUser.role==="warden"?"block":"none";
+ document.querySelector(".main").style.marginLeft=currentUser.role==="warden"?"245px":"0";
+ document.querySelector(".main").style.width=currentUser.role==="warden"?"calc(100% - 245px)":"100%";
+ userDisplay.innerHTML=`👤 ${currentUser.name} <span class="role-pill">${currentUser.role==="warden"?"ADMIN":"STUDENT"}</span> <button class="btn small secondary" onclick="logout()">Logout</button>`;
+ if(currentUser.role==="student"){
+   showStudentPortal();
+ }else{
+   document.getElementById("dashboard").classList.add("active");
+   document.getElementById("pageTitle").textContent="Warden Dashboard";
+ }
+}
+function logout(){
+ currentUser=null; authScreen.style.display="flex"; setAuthMode("student"); toggleStudentForm(); loginStudentId.value=""; loginStudentPassword.value="";
+}
+function showStudentPortal(){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ let page=document.getElementById("studentPortal");
+ if(!page){
+   page=document.createElement("section"); page.id="studentPortal"; page.className="page active";
+   page.innerHTML=`<div class="card"><h2>Welcome, ${currentUser.name}</h2><div class="muted">Room ${currentUser.room} · Student ID ${currentUser.id}</div><br><button class="btn" onclick="studentGoSubmit()">📝 Submit a Complaint</button></div>
+   <div class="card" style="margin-top:18px"><h2>My Complaints</h2><div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Complaint</th><th>Category</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead><tbody id="myComplaintRows"></tbody></table></div></div>`;
+   document.querySelector(".main").appendChild(page);
+ }
+ page.classList.add("active"); document.getElementById("pageTitle").textContent="Student Portal"; renderMyComplaints();
+}
+function renderMyComplaints(){
+ const rows=complaints.filter(x=>x.studentId===currentUser.id || (x.student===currentUser.name&&x.room===currentUser.room));
+ const el=document.getElementById("myComplaintRows"); if(!el)return;
+ el.innerHTML=rows.length?rows.slice().reverse().map(x=>`<tr><td>${x.id}</td><td><b>${x.title}</b><div class="meta">${x.desc}</div></td><td>${x.category}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${x.date}</td></tr>`).join(""):'<tr><td colspan="6" class="empty">You have not submitted any complaints.</td></tr>';
+}
+function studentGoSubmit(){
+ document.getElementById("studentPortal").classList.remove("active");
+ document.getElementById("submit").classList.add("active"); document.getElementById("pageTitle").textContent="Submit Complaint";
+ student.value=currentUser.name; room.value=currentUser.room; student.readOnly=true; room.readOnly=true;
+}
+
+function renderAll(){
+ let count=s=>complaints.filter(x=>x.status===s).length;
+ total.textContent=complaints.length;pending.textContent=count("Pending")+count("New");progress.textContent=count("In Progress");resolved.textContent=count("Resolved");
+ tvHigh.textContent=complaints.filter(x=>x.priority==="High"&&x.status!=="Resolved").length;tvPending.textContent=count("Pending")+count("New");tvProgress.textContent=count("In Progress");tvResolved.textContent=count("Resolved");
+ recent.innerHTML=complaints.slice().reverse().slice(0,5).map(x=>`<div class="complaint"><div class="row"><span class="title">${x.title}</span>${badge(x.priority)}</div><div class="meta">${x.id} · ${x.room} · ${x.category}</div></div>`).join("")||'<div class="empty">No complaints yet.</div>';
+ priority.innerHTML=["High","Medium","Low"].map(p=>`<div class="complaint"><div class="row"><span>${badge(p)}</span><strong>${complaints.filter(x=>x.priority===p&&x.status!=="Resolved").length}</strong></div></div>`).join("");
+ renderComplaints();
+ renderRegister();
+}
+function renderRegister(){
+ registerRows.innerHTML=complaints.length ? complaints.slice().reverse().map(x=>`<tr>
+ <td><strong>${x.id}</strong></td><td>${x.date}</td><td>${x.student}</td><td>${x.room}</td>
+ <td>${x.title}</td><td>${x.category}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${x.desc}</td>
+ </tr>`).join("") : '<tr><td colspan="9" class="empty">No complaints in the register.</td></tr>';
+}
+function exportExcel(){
+ if(!complaints.length){alert("There are no complaints to export.");return}
+ const headers=["Complaint ID","Date","Student Name","Room Number","Complaint Title","Description","Category","Priority","Status"];
+ const esc=v=>`"${String(v??"").replaceAll('"','""').replace(/\n/g," ")}"`;
+ const rows=complaints.map(x=>[x.id,x.date,x.student,x.room,x.title,x.desc,x.category,x.priority,x.status].map(esc).join(","));
+ const csv="\ufeff"+headers.map(esc).join(",")+"\n"+rows.join("\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a"); a.href=url;
+ a.download="Hostel_Complaint_Digital_Register_"+new Date().toISOString().slice(0,10)+".csv";
+ document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+ alert("Digital register exported successfully. Open the CSV file in Excel.");
+}
+function renderComplaints(){
+ let q='' (search?.value||"").toLowerCase(), fs=filterStatus?.value||"", fp=filterPriority?.value||"";
+ let arr=complaints.filter(x=>(!q||Object.values(x).join(" ").toLowerCase().includes(q))&&(!fs||x.status===fs)&&(!fp||x.priority===fp));
+ complaintRows.innerHTML=arr.length?arr.map(x=>`<tr><td><strong>${x.id}</strong></td><td><strong>${x.title}</strong><div class="meta">${x.date}</div></td><td>${x.student}<div class="meta">Room ${x.room}</div></td><td>${x.category}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td><button class="btn small" onclick="viewComplaint('${x.id}')">Manage</button></td></tr>`).join(""):'<tr><td colspan="7" class="empty">No complaints found.</td></tr>';
+}
+function viewComplaint(id){
+ let x=complaints.find(c=>c.id===id);
+ modalTitle.textContent=x.title;
+ modalBody.innerHTML=`<p><b>${x.id}</b> · ${x.date}</p><p>${x.desc}</p><p><b>Student:</b> ${x.student} · <b>Room:</b> ${x.room}</p><p><b>Category:</b> ${x.category} &nbsp; ${badge(x.priority)}</p><label style="font-size:13px;font-weight:700">Priority</label><select id="editPriority" style="width:100%;padding:10px;margin:7px 0 12px;border:1px solid #d0d5dd;border-radius:9px"><option ${x.priority==="High"?"selected":""}>High</option><option ${x.priority==="Medium"?"selected":""}>Medium</option><option ${x.priority==="Low"?"selected":""}>Low</option></select><label style="font-size:13px;font-weight:700">Status</label><select id="editStatus" style="width:100%;padding:10px;margin:7px 0 15px;border:1px solid #d0d5dd;border-radius:9px"><option>New</option><option>Pending</option><option>In Progress</option><option>Resolved</option></select><button class="btn" onclick="updateComplaint('${id}')">Save Update</button>`;
+editStatus.value=x.status;modal.classList.add("show");
+}
+function updateComplaint(id){let x=complaints.find(c=>c.id===id);x.priority=editPriority.value;x.status=editStatus.value;save();closeModal()}
+function closeModal(){modal.classList.remove("show")}
+let submitting=false;
+function resetComplaints(){
+ if(currentUser?.role!=="warden"){alert("Only the warden can reset the complaint register.");return}
+ if(!complaints.length){alert("The complaint register is already empty.");return}
+ const ok=confirm("WARNING: This will permanently clear ALL complaints from this browser's register. Continue?");
+ if(!ok)return;
+ const confirmText=prompt("Type RESET to confirm clearing all complaints:");
+ if(confirmText!=="RESET"){alert("Reset cancelled.");return}
+ complaints=[];
+ localStorage.setItem("hostelComplaints",JSON.stringify(complaints));
+ renderAll();
+ alert("All complaints have been cleared from the register.");
+}
+function successContinue(){
+ const successPage=document.getElementById("submittedSuccess");
+ successPage.classList.remove("active");
+ if(currentUser?.role==="student"){
+   showStudentPortal();
+ }else{
+   document.getElementById("dashboard").classList.add("active");
+   document.getElementById("pageTitle").textContent="Warden Dashboard";
+ }
+}
+function submitComplaint(){
+ if(submitting)return;
+
+ const submitBtn=document.querySelector('#submit .btn');
+ const studentEl=document.getElementById("student");
+ const roomEl=document.getElementById("room");
+ const titleEl=document.getElementById("ctitle");
+ const descEl=document.getElementById("desc");
+ const categoryEl=document.getElementById("category");
+ const priorityEl=document.getElementById("newPriority");
+ const photoEl=document.getElementById("photo");
+
+ submitting=true;
+ if(submitBtn){
+   submitBtn.disabled=true;
+   submitBtn.textContent="Submitting...";
+ }
+
+ const s=studentEl.value.trim();
+ const r=roomEl.value.trim();
+ const t=titleEl.value.trim();
+ const d=descEl.value.trim();
+
+ if(!s||!r||!t||!d){
+   alert("Please fill in all required fields.");
+   submitting=false;
+   if(submitBtn){submitBtn.disabled=false;submitBtn.textContent="Submit Complaint";}
+   return;
+ }
+
+ const id="HC-"+new Date().getFullYear()+"-"+String(Date.now()).slice(-5);
+ const complaint={
+   id:id,
+   student:s,
+   studentId:currentUser?.id||"",
+   room:r,
+   title:t,
+   desc:d,
+   category:categoryEl.value,
+   priority:priorityEl.value,
+   status:"New",
+   date:new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})
+ };
+
+ try{
+   complaints.push(complaint);
+   localStorage.setItem("hostelComplaints",JSON.stringify(complaints));
+
+   // Clear the form safely. The photo is not uploaded in this local HTML version.
+   titleEl.value="";
+   descEl.value="";
+   if(photoEl)photoEl.value="";
+
+   // Immediately switch to the confirmation page.
+   document.getElementById("successComplaintId").textContent=id;
+   document.getElementById("submit").classList.remove("active");
+   document.getElementById("submittedSuccess").classList.add("active");
+   document.getElementById("pageTitle").textContent="Complaint Submitted";
+
+   // Refresh dashboard/register in the background.
+   try{renderAll();}catch(e){console.warn("Dashboard refresh:",e);}
+ }catch(error){
+   console.error(error);
+   // If saving fails, remove the item we just added so it isn't duplicated.
+   complaints=complaints.filter(c=>c.id!==id);
+   alert("The complaint could not be saved. Please try again.");
+ }finally{
+   submitting=false;
+   if(submitBtn){
+     submitBtn.disabled=false;
+     submitBtn.textContent="Submit Complaint";
+   }
+ }
+}
+function openTV(){
+ let w=window.open("","_blank");
+ w.document.write(`<html><head><title>HostelCare TV Dashboard</title><style>body{font-family:Arial;background:#0b1220;color:white;padding:35px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.box{background:#172033;border-radius:18px;padding:25px}.num{font-size:48px;font-weight:bold;margin-top:12px}.high{color:#ff6b6b}.yellow{color:#ffd166}.green{color:#52d273}.blue{color:#69a7ff}.list{margin-top:25px;background:#172033;padding:22px;border-radius:18px}.item{padding:16px;border-bottom:1px solid #293548}.item:last-child{border:0}</style></head><body><h1>🏠 HostelCare — Live Complaint Monitor</h1><div class="grid"><div class="box"><div class="high">HIGH PRIORITY</div><div class="num">${complaints.filter(x=>x.priority==="High"&&x.status!=="Resolved").length}</div></div><div class="box"><div class="yellow">PENDING</div><div class="num">${complaints.filter(x=>x.status==="Pending"||x.status==="New").length}</div></div><div class="box"><div class="blue">IN PROGRESS</div><div class="num">${complaints.filter(x=>x.status==="In Progress").length}</div></div><div class="box"><div class="green">RESOLVED</div><div class="num">${complaints.filter(x=>x.status==="Resolved").length}</div></div></div><div class="list"><h2>Urgent & Active Complaints</h2>${complaints.filter(x=>x.status!=="Resolved").sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-{High:0,Medium:1,Low:2}[b.priority])).map(x=>`<div class="item"><b>${x.title}</b> — Room ${x.room}<br><small>${x.id} · ${x.category} · ${x.priority} · ${x.status}</small></div>`).join("")||"<p>No active complaints.</p>"}</div></body></html>`);
+ w.document.close();
+}
+renderAll();
+</script>
+</body>
+</html>
+<script>
+/* Start behind authentication */
+document.addEventListener("DOMContentLoaded",()=>{authScreen.style.display="flex";});
+</script>
